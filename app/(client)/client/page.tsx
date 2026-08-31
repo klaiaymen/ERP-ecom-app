@@ -1,54 +1,136 @@
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
-import { ShoppingBag, LifeBuoy, User } from "lucide-react";
+import {
+  ShoppingBag,
+  LifeBuoy,
+  User,
+  Package,
+  RotateCcw,
+  Clock,
+} from "lucide-react";
+import { StatCard } from "@/components/shared/StatCard";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
 export default function ClientDashboardPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Top Header */}
-        <div className="flex items-center justify-between pb-6 border-b border-slate-800">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">Espace Client Connecté</span>
-            <h1 className="text-3xl font-extrabold text-white">Mon Compte & Mes Commandes</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
-              ← Retour à la boutique
-            </Link>
-            <UserButton />
-          </div>
-        </div>
-
-        {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/40 transition-all">
-            <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-4">
-              <ShoppingBag className="h-5 w-5" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Mes Commandes</h3>
-            <p className="text-slate-400 text-sm mt-1">Consultez l'historique et l'état de livraison de vos achats.</p>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-violet-500/40 transition-all">
-            <div className="h-10 w-10 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center mb-4">
-              <LifeBuoy className="h-5 w-5" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Mes Réclamations</h3>
-            <p className="text-slate-400 text-sm mt-1">Soumettez ou suivez une demande de support / réclamation.</p>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/40 transition-all">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4">
-              <User className="h-5 w-5" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Mon Profil</h3>
-            <p className="text-slate-400 text-sm mt-1">Gérez vos coordonnées de livraison et vos informations personnelles.</p>
-          </div>
-        </div>
+    <div className="space-y-8">
+      {/* Title */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          Mon Espace Client
+        </h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          Suivez vos commandes, effectuez une réclamation ou gérez vos informations.
+        </p>
       </div>
+
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <StatCard
+          title="Commandes Passées"
+          value="4"
+          icon={ShoppingBag}
+          description="Total cumulé"
+          iconBgClassName="bg-blue-500/10"
+          iconClassName="text-blue-500"
+        />
+        <StatCard
+          title="Livraisons en cours"
+          value="1"
+          icon={Package}
+          description="Arrivée estimée demain"
+          iconBgClassName="bg-amber-500/10"
+          iconClassName="text-amber-500"
+        />
+        <StatCard
+          title="Réclamations"
+          value="0"
+          icon={LifeBuoy}
+          description="Aucun litige actif"
+          iconBgClassName="bg-emerald-500/10"
+          iconClassName="text-emerald-500"
+        />
+      </div>
+
+      {/* Quick Action Navigation Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="rounded-2xl border-border bg-card hover:border-primary/40 hover:shadow-md transition-all">
+          <CardContent className="p-6 space-y-3">
+            <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <ShoppingBag className="h-6 w-6" />
+            </div>
+            <h3 className="text-base font-bold text-foreground">Mes Commandes</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Consultez l'historique détaillé de vos achats, factures de vente et numéros de suivi colis.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href="/" />}
+              className="rounded-xl text-xs mt-2 w-full"
+            >
+              Commander à nouveau
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl border-border bg-card hover:border-primary/40 hover:shadow-md transition-all">
+          <CardContent className="p-6 space-y-3">
+            <div className="h-11 w-11 rounded-xl bg-violet-500/10 text-violet-500 flex items-center justify-center">
+              <RotateCcw className="h-6 w-6" />
+            </div>
+            <h3 className="text-base font-bold text-foreground">Retours & Réclamations</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Un problème avec un article reçu ? Ouvrez une demande de retour ou signalez une réclamation.
+            </p>
+            <Button variant="outline" size="sm" className="rounded-xl text-xs mt-2 w-full">
+              Créer une réclamation
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl border-border bg-card hover:border-primary/40 hover:shadow-md transition-all">
+          <CardContent className="p-6 space-y-3">
+            <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+              <User className="h-6 w-6" />
+            </div>
+            <h3 className="text-base font-bold text-foreground">Profil & Adresses</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Gérez vos adresses de livraison par défaut et vos préférences de contact.
+            </p>
+            <Button variant="outline" size="sm" className="rounded-xl text-xs mt-2 w-full">
+              Modifier mon profil
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Orders Showcase */}
+      <Card className="rounded-2xl border-border bg-card">
+        <CardHeader className="p-6 pb-4 flex flex-row items-center justify-between border-b border-border">
+          <div>
+            <CardTitle className="text-base font-bold">Dernière commande</CardTitle>
+            <CardDescription className="text-xs">Commande #CMD-2026-001</CardDescription>
+          </div>
+          <StatusBadge status="processing" />
+        </CardHeader>
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Passée le 31 Août 2026</span>
+            <span className="font-bold text-foreground text-sm">189.90 €</span>
+          </div>
+          <div className="p-3 rounded-xl bg-muted/40 border border-border text-xs flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />
+              <span>Statut livraison : En cours de préparation à l'entrepôt</span>
+            </div>
+            <span className="text-primary font-medium text-xs">Suivre le colis →</span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

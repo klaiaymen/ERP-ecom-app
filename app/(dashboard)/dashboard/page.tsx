@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
 import {
   Package,
   Layers,
@@ -14,74 +13,126 @@ import {
   FileCheck,
   Truck,
   Tag,
+  DollarSign,
+  AlertTriangle,
+  ArrowUpRight,
+  TrendingUp,
 } from "lucide-react";
+import { StatCard } from "@/components/shared/StatCard";
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
 const dashboardModules = [
-  { name: "Produits", href: "/dashboard/produits", icon: Package, color: "text-blue-400", bg: "bg-blue-500/10" },
-  { name: "Stocks & Mouvements", href: "/dashboard/stocks", icon: Layers, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-  { name: "Fournisseurs", href: "/dashboard/fournisseurs", icon: Building2, color: "text-purple-400", bg: "bg-purple-500/10" },
-  { name: "Commandes", href: "/dashboard/commandes", icon: ShoppingCart, color: "text-amber-400", bg: "bg-amber-500/10" },
-  { name: "Retours", href: "/dashboard/retours", icon: RotateCcw, color: "text-rose-400", bg: "bg-rose-500/10" },
-  { name: "Utilisateurs (Admin)", href: "/dashboard/utilisateurs", icon: Users, color: "text-cyan-400", bg: "bg-cyan-500/10", adminOnly: true },
-  { name: "Reporting & KPIs", href: "/dashboard/reporting", icon: BarChart3, color: "text-indigo-400", bg: "bg-indigo-500/10" },
-  { name: "Notifications", href: "/dashboard/notifications", icon: Bell, color: "text-yellow-400", bg: "bg-yellow-500/10" },
-  { name: "Réclamations", href: "/dashboard/reclamations", icon: MessageSquareWarning, color: "text-orange-400", bg: "bg-orange-500/10" },
-  { name: "Finance Fournisseurs", href: "/dashboard/finance-fournisseurs", icon: Building2, color: "text-teal-400", bg: "bg-teal-500/10" },
-  { name: "Factures", href: "/dashboard/factures", icon: FileCheck, color: "text-sky-400", bg: "bg-sky-500/10" },
-  { name: "Transporteurs", href: "/dashboard/transporteurs", icon: Truck, color: "text-violet-400", bg: "bg-violet-500/10" },
-  { name: "Marketing & Promos", href: "/dashboard/marketing", icon: Tag, color: "text-pink-400", bg: "bg-pink-500/10" },
+  { name: "Produits", href: "/dashboard/produits", icon: Package, color: "text-blue-500", bg: "bg-blue-500/10", desc: "Catalogue, variantes & prix" },
+  { name: "Stocks & Mouvements", href: "/dashboard/stocks", icon: Layers, color: "text-emerald-500", bg: "bg-emerald-500/10", desc: "Suivi en temps réel & seuils" },
+  { name: "Commandes", href: "/dashboard/commandes", icon: ShoppingCart, color: "text-amber-500", bg: "bg-amber-500/10", desc: "Traitement des commandes client" },
+  { name: "Retours", href: "/dashboard/retours", icon: RotateCcw, color: "text-rose-500", bg: "bg-rose-500/10", desc: "Gestion des RMA et remboursements" },
+  { name: "Facturation", href: "/dashboard/factures", icon: FileCheck, color: "text-sky-500", bg: "bg-sky-500/10", desc: "Factures ventes & achats" },
+  { name: "Fournisseurs", href: "/dashboard/fournisseurs", icon: Building2, color: "text-purple-500", bg: "bg-purple-500/10", desc: "Carnet d'adresses & contacts" },
+  { name: "Finance Fournisseurs", href: "/dashboard/finance-fournisseurs", icon: Building2, color: "text-teal-500", bg: "bg-teal-500/10", desc: "Suivi des dettes et règlements" },
+  { name: "Transporteurs", href: "/dashboard/transporteurs", icon: Truck, color: "text-violet-500", bg: "bg-violet-500/10", desc: "Suivi des colis et logistique" },
+  { name: "Réclamations", href: "/dashboard/reclamations", icon: MessageSquareWarning, color: "text-orange-500", bg: "bg-orange-500/10", desc: "Tickets et SAV client" },
+  { name: "Marketing & Promos", href: "/dashboard/marketing", icon: Tag, color: "text-pink-500", bg: "bg-pink-500/10", desc: "Codes promotionnels & offres" },
+  { name: "Reporting & KPIs", href: "/dashboard/reporting", icon: BarChart3, color: "text-indigo-500", bg: "bg-indigo-500/10", desc: "Analyses de ventes et marge" },
+  { name: "Utilisateurs & Accès", href: "/dashboard/utilisateurs", icon: Users, color: "text-cyan-500", bg: "bg-cyan-500/10", desc: "Rôles Admin / Commercial / Client", adminOnly: true },
 ];
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-6 border-b border-slate-800">
+    <div className="space-y-8">
+      {/* Page Title & Actions Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            Vue d'ensemble
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Supervisez l'ensemble de votre activité e-commerce et flux de stock en temps réel.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <DateRangePicker />
+        </div>
+      </div>
+
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <StatCard
+          title="Chiffre d'affaires"
+          value="48 920 €"
+          icon={DollarSign}
+          change={{ value: 12.5, timeframe: "vs mois dernier" }}
+          iconBgClassName="bg-indigo-500/10"
+          iconClassName="text-indigo-500"
+        />
+        <StatCard
+          title="Commandes du mois"
+          value="342"
+          icon={ShoppingCart}
+          change={{ value: 8.2, timeframe: "vs mois dernier" }}
+          iconBgClassName="bg-blue-500/10"
+          iconClassName="text-blue-500"
+        />
+        <StatCard
+          title="Alertes Stock Faible"
+          value="7"
+          icon={AlertTriangle}
+          change={{ value: -3.4, timeframe: "sur 150 variantes" }}
+          iconBgClassName="bg-amber-500/10"
+          iconClassName="text-amber-500"
+        />
+        <StatCard
+          title="Réclamations en cours"
+          value="3"
+          icon={MessageSquareWarning}
+          change={{ value: -25.0, timeframe: "délai moy: 4h" }}
+          iconBgClassName="bg-orange-500/10"
+          iconClassName="text-orange-500"
+        />
+      </div>
+
+      {/* Modules Quick Access Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">Back-Office ERP</span>
-              <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                Admin & Commercial
-              </span>
-            </div>
-            <h1 className="text-3xl font-extrabold text-white mt-1">Tableau de Bord & Modules</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
-              ← Boutique
-            </Link>
-            <UserButton />
+            <h2 className="text-lg font-bold text-foreground">Modules Opérationnels</h2>
+            <p className="text-xs text-muted-foreground">Accédez directement aux différents espaces de gestion.</p>
           </div>
         </div>
 
-        {/* Modules Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {dashboardModules.map((module) => {
-            const Icon = module.icon;
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {dashboardModules.map((mod) => {
+            const Icon = mod.icon;
             return (
               <Link
-                key={module.href}
-                href={module.href}
-                className="group p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800/80 transition-all flex flex-col justify-between"
+                key={mod.href}
+                href={mod.href}
+                className="group relative p-5 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-md transition-all duration-200 flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`h-11 w-11 rounded-xl ${module.bg} ${module.color} flex items-center justify-center group-hover:scale-105 transition-transform`}>
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  {module.adminOnly && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                      <Shield className="h-3 w-3" /> Admin
-                    </span>
-                  )}
-                </div>
                 <div>
-                  <h3 className="font-bold text-white text-base group-hover:text-indigo-300 transition-colors">
-                    {module.name}
+                  <div className="flex items-center justify-between mb-3">
+                    <div
+                      className={`h-10 w-10 rounded-xl ${mod.bg} ${mod.color} flex items-center justify-center group-hover:scale-105 transition-transform`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    {mod.adminOnly && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 flex items-center gap-1">
+                        <Shield className="h-3 w-3" /> Admin
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
+                    {mod.name}
+                    <ArrowUpRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
                   </h3>
-                  <p className="text-slate-400 text-xs mt-1">Accéder au module →</p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    {mod.desc}
+                  </p>
                 </div>
               </Link>
             );
