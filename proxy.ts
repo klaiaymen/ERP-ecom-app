@@ -1,5 +1,24 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { neon } from "@neondatabase/serverless";
+
+const databaseUrl = process.env.DATABASE_URL;
+
+async function getUserRoleFromDb(clerkUserId: string): Promise<string> {
+  if (!databaseUrl) return "client";
+  try {
+    const sql = neon(databaseUrl);
+    const result = await sql`
+      SELECT role FROM users WHERE clerk_user_id = ${clerkUserId} LIMIT 1;
+    `;
+    if (result && result.length > 0 && result[0].role) {
+      return result[0].role;
+    }
+  } catch (err) {
+    console.error("Error querying user role in proxy.ts:", err);
+  }
+  return "client";
+}
 
 export default clerkMiddleware(async (auth, req) => {
   const pathname = req.nextUrl.pathname;
@@ -27,7 +46,11 @@ export default clerkMiddleware(async (auth, req) => {
     metadata?: { role?: string };
   } | null;
 
-  const userRole = sessionData?.publicMetadata?.role || sessionData?.metadata?.role || "client";
+  let userRole = sessionData?.publicMetadata?.role || sessionData?.metadata?.role;
+
+  if (!userRole) {
+    userRole = await getUserRoleFromDb(userId);
+  }
 
   // Enforce Admin-only access for /dashboard/utilisateurs
   if (pathname.startsWith("/dashboard/utilisateurs")) {

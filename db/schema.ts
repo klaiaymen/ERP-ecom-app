@@ -140,8 +140,19 @@ export const products = pgTable(
     categoryId: uuid("category_id").references(() => categories.id, {
       onDelete: "set null",
     }),
+    subCategoryId: uuid("sub_category_id").references(() => categories.id, {
+      onDelete: "set null",
+    }),
+    supplierId: uuid("supplier_id").references(() => suppliers.id, {
+      onDelete: "set null",
+    }),
+    vatRate: numeric("vat_rate", { precision: 5, scale: 2 }).default("20.00").notNull(),
+    weight: numeric("weight", { precision: 10, scale: 2 }),
+    dimensions: jsonb("dimensions"),
+    qrCodeUrl: text("qr_code_url"),
     imageUrl: text("image_url"),
     isActive: boolean("is_active").default(true).notNull(),
+    deletedAt: timestamp("deleted_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -150,6 +161,7 @@ export const products = pgTable(
     index("idx_products_sku").on(table.sku),
     index("idx_products_category_id").on(table.categoryId),
     index("idx_products_is_active").on(table.isActive),
+    index("idx_products_deleted_at").on(table.deletedAt),
   ]
 );
 
@@ -167,12 +179,34 @@ export const productVariants = pgTable(
     price: numeric("price", { precision: 12, scale: 2 }),
     costPrice: numeric("cost_price", { precision: 12, scale: 2 }),
     barcode: varchar("barcode", { length: 255 }),
+    deletedAt: timestamp("deleted_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
     index("idx_product_variants_product_id").on(table.productId),
     index("idx_product_variants_sku").on(table.sku),
     index("idx_product_variants_barcode").on(table.barcode),
+    index("idx_product_variants_deleted_at").on(table.deletedAt),
+  ]
+);
+
+// 4b. Product Images
+export const productImages = pgTable(
+  "product_images",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    key: text("key"),
+    isPrimary: boolean("is_primary").default(false).notNull(),
+    position: integer("position").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_product_images_product_id").on(table.productId),
+    index("idx_product_images_is_primary").on(table.isPrimary),
   ]
 );
 
@@ -510,15 +544,34 @@ export const categoriesRelations = relations(categories, ({ one, many }) => ({
     relationName: "categoryToParent",
   }),
   children: many(categories, { relationName: "categoryToParent" }),
-  products: many(products),
+  products: many(products, { relationName: "productCategory" }),
+  subProducts: many(products, { relationName: "productSubCategory" }),
 }));
 
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, {
     fields: [products.categoryId],
     references: [categories.id],
+    relationName: "productCategory",
+  }),
+  subCategory: one(categories, {
+    fields: [products.subCategoryId],
+    references: [categories.id],
+    relationName: "productSubCategory",
+  }),
+  supplier: one(suppliers, {
+    fields: [products.supplierId],
+    references: [suppliers.id],
   }),
   variants: many(productVariants),
+  images: many(productImages),
+}));
+
+export const productImagesRelations = relations(productImages, ({ one }) => ({
+  product: one(products, {
+    fields: [productImages.productId],
+    references: [products.id],
+  }),
 }));
 
 export const productVariantsRelations = relations(
@@ -660,6 +713,9 @@ export type NewProduct = typeof products.$inferInsert;
 
 export type ProductVariant = typeof productVariants.$inferSelect;
 export type NewProductVariant = typeof productVariants.$inferInsert;
+
+export type ProductImage = typeof productImages.$inferSelect;
+export type NewProductImage = typeof productImages.$inferInsert;
 
 export type Stock = typeof stocks.$inferSelect;
 export type StockMovement = typeof stockMovements.$inferSelect;
