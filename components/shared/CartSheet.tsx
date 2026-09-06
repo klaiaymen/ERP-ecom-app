@@ -16,6 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 
 export function CartSheet() {
+  const [mounted, setMounted] = React.useState(false);
   const {
     items,
     isOpen,
@@ -26,8 +27,12 @@ export function CartSheet() {
     getTotalItems,
   } = useCart();
 
-  const totalItems = getTotalItems();
-  const totalPrice = getTotalPrice();
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const totalItems = mounted ? getTotalItems() : 0;
+  const totalPrice = mounted ? getTotalPrice() : 0;
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>

@@ -70,9 +70,22 @@ export async function getUserRole(): Promise<UserRole | null> {
   }
 
   const claims = sessionClaims as unknown as CustomSessionClaims | null;
-  const role = claims?.publicMetadata?.role || claims?.metadata?.role || "client";
+  let role = claims?.publicMetadata?.role || claims?.metadata?.role;
 
-  return role;
+  if (!role) {
+    try {
+      const dbUser = await db.query.users.findFirst({
+        where: eq(users.clerkUserId, userId),
+      });
+      if (dbUser && dbUser.role) {
+        role = dbUser.role;
+      }
+    } catch (e) {
+      console.error("Error fetching user role from DB:", e);
+    }
+  }
+
+  return role || "client";
 }
 
 /**
@@ -81,18 +94,17 @@ export async function getUserRole(): Promise<UserRole | null> {
  */
 export async function requireRole(
   allowedRoles: UserRole[],
-  redirectTo: string = "/"
+  redirectTo: string = "/client"
 ): Promise<{ userId: string; role: UserRole }> {
-  const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");
   }
 
-  const claims = sessionClaims as unknown as CustomSessionClaims | null;
-  const role = claims?.publicMetadata?.role || claims?.metadata?.role || "client";
+  const role = await getUserRole();
 
-  if (!allowedRoles.includes(role)) {
+  if (!role || !allowedRoles.includes(role)) {
     redirect(redirectTo);
   }
 

@@ -1,22 +1,51 @@
-import Link from "next/link";
-import { ArrowLeft, Package } from "lucide-react";
+import { getProducts, getCategoriesList, getSuppliersList } from "@/actions/produits";
+import { ProductCatalogueClient } from "@/components/produits/ProductCatalogueClient";
 
-export default function ProduitsPage() {
+export const dynamic = "force-dynamic";
+
+interface ProduitsPageProps {
+  searchParams: Promise<{
+    page?: string;
+    limit?: string;
+    search?: string;
+    categoryId?: string;
+    supplierId?: string;
+    stockStatus?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }>;
+}
+
+export default async function ProduitsPage({ searchParams }: ProduitsPageProps) {
+  const params = await searchParams;
+
+  const parsedParams = {
+    page: params.page ? parseInt(params.page, 10) : 1,
+    limit: params.limit ? parseInt(params.limit, 10) : 12,
+    search: params.search,
+    categoryId: params.categoryId,
+    supplierId: params.supplierId,
+    stockStatus: (params.stockStatus as any) || "all",
+    minPrice: params.minPrice ? parseFloat(params.minPrice) : undefined,
+    maxPrice: params.maxPrice ? parseFloat(params.maxPrice) : undefined,
+    sortBy: (params.sortBy as any) || "createdAt",
+    sortOrder: (params.sortOrder as any) || "desc",
+  };
+
+  const [productsData, categories, suppliers] = await Promise.all([
+    getProducts(parsedParams),
+    getCategoriesList(),
+    getSuppliersList(),
+  ]);
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 font-sans">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="text-slate-400 hover:text-white transition-colors">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Package className="h-6 w-6 text-blue-400" /> Gestion des Produits & Variantes
-          </h1>
-        </div>
-        <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800 text-slate-400 text-sm">
-          Module Produits prêt à recevoir la logiques métier & Server Actions.
-        </div>
-      </div>
-    </div>
+    <ProductCatalogueClient
+      products={productsData.data as any}
+      categories={categories}
+      suppliers={suppliers}
+      pagination={productsData.pagination}
+    />
   );
 }
